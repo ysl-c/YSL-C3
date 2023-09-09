@@ -10,6 +10,7 @@ class CompilerBackend {
 	abstract void CompileFunctionStart(FunctionStartNode node);
 	abstract void CompileEnd();
 	abstract void CompileFunctionCall(FunctionCallNode node);
+	abstract void CompileAsm(AsmNode node);
 }
 
 class Compiler {
@@ -35,6 +36,10 @@ class Compiler {
 				}
 				case NodeType.FunctionCall: {
 					backend.CompileFunctionCall(cast(FunctionCallNode) node);
+					break;
+				}
+				case NodeType.Asm: {
+					backend.CompileAsm(cast(AsmNode) node);
 					break;
 				}
 				default: assert(0);

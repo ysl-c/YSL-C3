@@ -17,7 +17,8 @@ enum NodeType {
 	FunctionCall,
 	String,
 	Integer,
-	Variable
+	Variable,
+	Asm
 }
 
 class Node {
@@ -123,6 +124,18 @@ class VariableNode : Node {
 	}
 }
 
+class AsmNode : Node {
+	string code;
+
+	this() {
+		type = NodeType.Asm;
+	}
+
+	override string toString() {
+		return format("asm %s", code);
+	}
+}
+
 class EndParsingException : Exception {
 	this() {
 		super("", "", 0);
@@ -204,6 +217,12 @@ class Parser {
 		return ret;
 	}
 
+	AsmNode ParseAsm() {
+		auto ret = new AsmNode();
+		ret.code = tokens[i].contents;
+		return ret;
+	}
+
 	Node ParseStatement() {
 		switch (tokens[i].type) {
 			case TokenType.Keyword: {
@@ -212,6 +231,9 @@ class Parser {
 					case "end":  return cast(Node) new EndNode();
 					default:     assert(0);
 				}
+			}
+			case TokenType.Asm: {
+				return cast(Node) ParseAsm();
 			}
 			case TokenType.Identifier: return cast(Node) ParseFunctionCall();
 			default: assert(0);

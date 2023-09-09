@@ -1,3 +1,9 @@
+func sayA
+	asm mov ah, 0x0E
+	asm mov al, 'A'
+	asm int 0x10
+end
+
 func main
-	
+	sayA	
 end

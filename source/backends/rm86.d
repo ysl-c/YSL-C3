@@ -18,14 +18,14 @@ class BackendRM86 : CompilerBackend {
 	string      assembly;
 	BlockType[] blocks;
 	string[]    strings;
-	string[]    functions;
+	Function[]  functions;
 
 	void PopBlock() {
 		blocks = blocks.remove(blocks.length - 1);
 	}
 
 	override void Init() {
-		assembly = "goto __func__main\n";
+		assembly = "jmp __func__main\n";
 	}
 
 	override void Finish() {
@@ -35,12 +35,13 @@ class BackendRM86 : CompilerBackend {
 	override void CompileFunctionStart(FunctionStartNode node) {
 		assembly  ~= format("__func__%s:\n", node.name);
 		blocks    ~= BlockType.FunctionDefinition;
+		functions ~= Function(node.name, "");
 		assembly  ~= "push bp\nmov bp, sp\n";
-		functions = Function(node.name, "");
 	}
 
 	override void CompileEnd() {
-		assembly ~= "pop bp\nret\n";
+		assembly ~= "mov sp, bp\npop bp\n";
+		assembly ~= "ret\n";
 		PopBlock();
 	}
 
@@ -72,5 +73,9 @@ class BackendRM86 : CompilerBackend {
 		}
 
 		assembly ~= format("call __func__%s\n", node.func);
+	}
+
+	override void CompileAsm(AsmNode node) {
+		assembly ~= format("%s\n", node.code);
 	}
 }

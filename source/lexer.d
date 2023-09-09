@@ -14,6 +14,7 @@ enum TokenType {
 	Identifier,
 	Integer,
 	String,
+	Asm,
 	EndLine
 }
 
@@ -107,7 +108,14 @@ class Lexer {
 				switch (CurrentChar()) {
 					case '\t':
 					case ' ': {
-						AddReading(ret);
+						if (reading == "asm") {
+							reading = program[line].contents[col .. $];
+							AddToken(TokenType.Asm);
+							goto end;
+						}
+						else {
+							AddReading(ret);
+						}
 						break;
 					}
 					case '"': {
