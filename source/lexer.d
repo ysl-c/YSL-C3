@@ -110,7 +110,7 @@ class Lexer {
 					case ' ': {
 						if (reading == "asm") {
 							reading = program[line].contents[col .. $];
-							AddToken(TokenType.Asm);
+							ret ~= AddToken(TokenType.Asm);
 							goto end;
 						}
 						else {
