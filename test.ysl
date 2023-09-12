@@ -1,9 +1,17 @@
-func sayA
+func putch u8 ch
 	asm mov ah, 0x0E
-	asm mov al, 'A'
+	asm mov al, [sp]
 	asm int 0x10
 end
 
+func add_u8 u8 a u8 b -> u8
+	asm mov al, [bp]
+	asm mov bl, [bp + 1]
+	asm add al, bl
+end
+
 func main
-	sayA	
+	let u8 ch
+	set ch 65
+	putch ch
 end

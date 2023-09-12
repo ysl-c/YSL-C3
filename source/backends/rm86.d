@@ -6,6 +6,7 @@ module yslc.backends.rm86;
 import std.file;
 import std.format;
 import std.algorithm;
+import yslc.error;
 import yslc.parser;
 import yslc.compiler;
 
@@ -24,11 +25,26 @@ class BackendRM86 : CompilerBackend {
 		blocks = blocks.remove(blocks.length - 1);
 	}
 
+	string SizeAsAsmType(size_t size) {
+		switch (size) {
+			case 1: return "byte";
+			case 2: return "word";
+			case 3: return "dword";
+			case 4: return "qword";
+			default: assert(0);
+		}
+	}
+
 	override void Init() {
+		// basically the runtime
 		assembly = "jmp __func__main\n";
 	}
 
 	override void Finish() {
+		foreach (i, ref str ; strings) {
+			assembly ~= format("__string__%d: db \"%s\", 0\n", i, str);
+		}
+		
 		std.file.write(outFile, assembly);
 	}
 
@@ -36,12 +52,18 @@ class BackendRM86 : CompilerBackend {
 		assembly  ~= format("__func__%s:\n", node.name);
 		blocks    ~= BlockType.FunctionDefinition;
 		functions ~= Function(node.name, "");
-		assembly  ~= "push bp\nmov bp, sp\n";
 	}
 
-	override void CompileEnd() {
+	override void CompileEnd(EndNode node) {
 		assembly ~= "mov sp, bp\npop bp\n";
 		assembly ~= "ret\n";
+
+		if (blocks.length == 0) {
+			ErrorExtraEnd(node.GetErrorInfo());
+			success = false;
+			return;
+		}
+		
 		PopBlock();
 	}
 
@@ -61,13 +83,20 @@ class BackendRM86 : CompilerBackend {
 				break;
 			}
 			case NodeType.Variable: {
-				break; // TODO
+				auto node = cast(VariableNode) pnode;
+				auto var  = GetLocal(node.name);
+
+				assembly ~= format(
+					"push %s [bp + %d]\n", SizeAsAsmType(var.size), var.stackOffset
+				);
+				break;
 			}
 			default: assert(0);
 		}
 	}
 
 	override void CompileFunctionCall(FunctionCallNode node) {
+		assembly  ~= "push bp\nmov bp, sp\n";
 		foreach (ref param ; node.parameters) {
 			CompileParameter(param);
 		}
@@ -77,5 +106,45 @@ class BackendRM86 : CompilerBackend {
 
 	override void CompileAsm(AsmNode node) {
 		assembly ~= format("%s\n", node.code);
+	}
+
+	override void CompileLet(Variable variable) {
+		string type = SizeAsAsmType(variable.size);
+
+		assembly ~= format("push %s 0\n", type);
+	}
+
+	override void CompileSet(SetNode node) {
+		auto var = GetLocal(node.varName);
+		CompileParameter(node.value);
+
+		switch (var.size) {
+			case 1: {
+				assembly ~= "pop ax\n";
+				assembly ~= format("mov [bp + %d], al\n", var.stackOffset);
+				break;
+			}
+			case 2: {
+				assembly ~= "pop ax\n";
+				assembly ~= format("mov [bp + %d], ax\n", var.stackOffset);
+				break;
+			}
+			case 4: {
+				assembly ~= "pop eax\n";
+				assembly ~= format("mov [bp + %d], eax\n", var.stackOffset);
+				break;
+			}
+			case 8: {
+				ErrorTypeUnsupported(node.GetErrorInfo());
+				success = false;
+				break;
+			}
+			default: assert(0);
+		}
+	}
+
+	override void CompileReturn(ReturnNode node) {
+		CompileParameter(node.value);
+		assembly ~= "pop ax\nmov sp, bp\npop bp\nret\n";
 	}
 }

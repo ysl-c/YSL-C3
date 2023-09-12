@@ -11,7 +11,14 @@ class LanguageException : Exception {
 class Language {
 	static const string[] keywords = [
 		"func",
-		"end"
+		"end",
+		"let",
+		"set",
+		"return"
+	];
+
+	static const string[] operators = [
+		"->"
 	];
 
 	static char EscapeChar(char ch) {

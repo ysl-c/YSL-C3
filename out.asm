@@ -6,13 +6,6 @@ __func__putch:
 mov sp, bp
 pop bp
 ret
-__func__add_u8:
- mov al, [bp]
- mov bl, [bp + 1]
- add al, bl
-mov sp, bp
-pop bp
-ret
 __func__main:
 push byte 0
 push word 65
@@ -22,6 +15,9 @@ push bp
 mov bp, sp
 push byte [bp + 0]
 call __func__putch
+mov sp, bp
+pop bp
+ret
 mov sp, bp
 pop bp
 ret

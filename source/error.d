@@ -44,3 +44,23 @@ void ErrorExpected(ErrorInfo info, string expected, string got) {
 	ErrorBegin(info);
 	stderr.writefln("Expected %s, got %s", expected, got);
 }
+
+void ErrorUnknownType(ErrorInfo info, string type) {
+	ErrorBegin(info);
+	stderr.writefln("Unknown type '%s'", type);
+}
+
+void ErrorUndefinedVariable(ErrorInfo info, string var) {
+	ErrorBegin(info);
+	stderr.writefln("Using undefined variable '%s'", var);
+}
+
+void ErrorTypeUnsupported(ErrorInfo info) {
+	ErrorBegin(info);
+	stderr.writeln("Type unsupported on current backend");
+}
+
+void ErrorExtraEnd(ErrorInfo info) {
+	ErrorBegin(info);
+	stderr.writeln("Extra end");
+}

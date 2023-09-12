@@ -1,6 +1,7 @@
 module yslc.parser;
 
 import std.conv;
+import std.stdio;
 import std.format;
 import yslc.error;
 import yslc.lexer;
@@ -18,14 +19,23 @@ enum NodeType {
 	String,
 	Integer,
 	Variable,
-	Asm
+	Asm,
+	Let,
+	Set,
+	Return
 }
 
 class Node {
 	NodeType type;
+	string   file;
+	size_t   line;
 
 	override string toString() {
 		return "";
+	}
+
+	ErrorInfo GetErrorInfo() {
+		return ErrorInfo(file, line);
 	}
 }
 
@@ -48,14 +58,25 @@ class ProgramNode : Node {
 }
 
 class FunctionStartNode : Node {
-	string name;
+	string   name;
+	string   returns;
+	string[] parameters;
+	string[] types;
 
 	this() {
 		type = NodeType.FunctionStart;
 	}
 
 	override string toString() {
-		return format("func %s", name);
+		string ret = format("func %s", name);
+
+		foreach (i, ref param ; parameters) {
+			ret ~= format(" %s %s", types[i], param);
+		}
+
+		ret ~= format(" -> %s", returns);
+
+		return ret;
 	}
 }
 
@@ -136,6 +157,44 @@ class AsmNode : Node {
 	}
 }
 
+class LetNode : Node {
+	string varType;
+	string var;
+
+	this() {
+		type = NodeType.Let;
+	}
+
+	override string toString() {
+		return format("let %s %s", varType, var);
+	}
+}
+
+class SetNode : Node {
+	string varName;
+	Node   value;
+
+	this() {
+		type = NodeType.Set;
+	}
+
+	override string toString() {
+		return format("set %s %s", varName, value.toString());
+	}
+}
+
+class ReturnNode : Node {
+	Node value;
+
+	this() {
+		type = NodeType.Return;
+	}
+
+	override string toString() {
+		return format("return %s", value.toString());
+	}
+}
+
 class EndParsingException : Exception {
 	this() {
 		super("", "", 0);
@@ -169,13 +228,54 @@ class Parser {
 		}
 	}
 
+	void SetupNode(Node node) {
+		node.file = tokens[i].file;
+		node.line = tokens[i].line;
+	}
+
 	FunctionStartNode ParseFunc() {
-		auto ret = new FunctionStartNode();
+		auto ret    = new FunctionStartNode();
+		ret.returns = "void";
+		SetupNode(ret);
 
 		Next();
 		ExpectType(TokenType.Identifier);
 
 		ret.name = tokens[i].contents;
+
+		Next();
+
+		while (tokens[i].type != TokenType.EndLine) {
+			if (tokens[i].type == TokenType.Identifier) {
+				ExpectType(TokenType.Identifier);
+
+				ret.types ~= tokens[i].contents;
+				Next();
+				ExpectType(TokenType.Identifier);
+				ret.parameters ~= tokens[i].contents;
+			}
+			else if (
+				(tokens[i].type == TokenType.Operator) && (tokens[i].contents == "->")
+			) {
+				Next();
+				ExpectType(TokenType.Identifier);
+				ret.returns = tokens[i].contents;
+			}
+			else {
+				assert(0); // TODO: ERRORS!!!!!!!!!!!!!!!!!!!!!!!
+			}
+			
+			Next();
+		}
+
+		-- i;
+		
+		return ret;
+	}
+
+	EndNode ParseEnd() {
+		auto ret = new EndNode();
+		SetupNode(ret);
 		return ret;
 	}
 
@@ -183,16 +283,22 @@ class Parser {
 		switch (tokens[i].type) {
 			case TokenType.Integer: {
 				auto ret  = new IntegerNode();
+				SetupNode(ret);
+				
 				ret.value = parse!long(tokens[i].contents);
 				return ret;
 			}
 			case TokenType.String: {
 				auto ret  = new StringNode();
+				SetupNode(ret);
+				
 				ret.value = tokens[i].contents;
 				return ret;
 			}
 			case TokenType.Identifier: {
 				auto ret = new VariableNode();
+				SetupNode(ret);
+				
 				ret.name = tokens[i].contents;
 				return ret;
 			}
@@ -202,6 +308,7 @@ class Parser {
 
 	FunctionCallNode ParseFunctionCall() {
 		auto ret = new FunctionCallNode();
+		SetupNode(ret);
 
 		ret.func = tokens[i].contents;
 
@@ -219,7 +326,50 @@ class Parser {
 
 	AsmNode ParseAsm() {
 		auto ret = new AsmNode();
+		SetupNode(ret);
+		
 		ret.code = tokens[i].contents;
+		return ret;
+	}
+
+	LetNode ParseLet() {
+		auto ret = new LetNode();
+		SetupNode(ret);
+
+		Next();
+		ExpectType(TokenType.Identifier);
+
+		ret.varType = tokens[i].contents;
+
+		Next();
+		ExpectType(TokenType.Identifier);
+		
+		ret.var = tokens[i].contents;
+		return ret;
+	}
+
+	SetNode ParseSet() {
+		auto ret = new SetNode();
+		SetupNode(ret);
+
+		Next();
+		ExpectType(TokenType.Identifier);
+
+		ret.varName = tokens[i].contents;
+
+		Next();
+		ret.value = ParseParameter();
+
+		return ret;
+	}
+
+	ReturnNode ParseReturn() {
+		auto ret = new ReturnNode();
+		SetupNode(ret);
+
+		Next();
+		ret.value = ParseParameter();
+
 		return ret;
 	}
 
@@ -227,9 +377,12 @@ class Parser {
 		switch (tokens[i].type) {
 			case TokenType.Keyword: {
 				switch (tokens[i].contents) {
-					case "func": return cast(Node) ParseFunc();
-					case "end":  return cast(Node) new EndNode();
-					default:     assert(0);
+					case "func":   return cast(Node) ParseFunc();
+					case "end":    return cast(Node) ParseEnd();
+					case "let":    return cast(Node) ParseLet();
+					case "set":    return cast(Node) ParseSet();
+					case "return": return cast(Node) ParseReturn();
+					default:       assert(0);
 				}
 			}
 			case TokenType.Asm: {

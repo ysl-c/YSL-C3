@@ -11,17 +11,19 @@ const string appUsage = "
 Usage: %s {FILE} [options]
 
 Options:
-	-h / --help       : Show this usage
-	-o / --out {FILE} : Tell the compiler where to put the output
-	-t / --tokens     : Shows lexer output
-	-a / --ast        : Shows parser output
+	-h / --help         : Show this usage
+	-o / --out {FILE}   : Tell the compiler where to put the output
+	-t / --tokens       : Shows lexer output
+	-a / --ast          : Shows parser output
+	-p / --preprocessor : Show preprocessor output
 ";
 
 int main(string[] args) {
 	string inFile;
 	string outFile = "out.asm";
-	bool   showTokens = false;
-	bool   showAST    = false;
+	bool   showPreprocessor = false;
+	bool   showTokens       = false;
+	bool   showAST          = false;
 
 	for (size_t i = 1; i < args.length; ++ i) {
 		if (args[i][0] == '-') {
@@ -55,6 +57,11 @@ int main(string[] args) {
 					showAST = true;
 					break;
 				}
+				case "-p":
+				case "--preprocessor": {
+					showPreprocessor = true;
+					break;
+				}
 				default: {
 					stderr.writefln(
 						"Unrecognised command line option %s", args[i]
@@ -75,6 +82,13 @@ int main(string[] args) {
 
 	string[] included;	
 	auto program = RunPreprocessor(inFile, [], included);
+
+	if (showPreprocessor) {
+		foreach (ref line ; program) {
+			writeln(line);
+		}
+		return 0;
+	}
 
 	auto lexer = new Lexer();
 	lexer.program = program;

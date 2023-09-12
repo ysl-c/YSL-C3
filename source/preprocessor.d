@@ -4,6 +4,7 @@ import std.uni;
 import std.file;
 import std.path;
 import std.array;
+import std.format;
 import std.string;
 import std.algorithm;
 import core.stdc.stdlib;
@@ -14,6 +15,10 @@ struct CodeLine {
 	string file;
 	size_t line;
 	string contents;
+
+	string toString() {
+		return format("(%s:%d) %s", file, line, contents);
+	}
 }
 
 CodeLine[] RunPreprocessor(

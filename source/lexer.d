@@ -15,6 +15,7 @@ enum TokenType {
 	Integer,
 	String,
 	Asm,
+	Operator,
 	EndLine
 }
 
@@ -64,6 +65,9 @@ class Lexer {
 		}
 		else if (Language.keywords.canFind(reading)) {
 			tokens ~= AddToken(TokenType.Keyword);
+		}
+		else if (Language.operators.canFind(reading)) {
+			tokens ~= AddToken(TokenType.Operator);
 		}
 		else {
 			tokens ~= AddToken(TokenType.Identifier);
