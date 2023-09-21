@@ -68,6 +68,7 @@ class CompilerBackend {
 	abstract void CompileLet(Variable variable);
 	abstract void CompileSet(SetNode node);
 	abstract void CompileReturn(ReturnNode node);
+	abstract void CompileBind(BindNode node);
 }
 
 Variable TypeToVariable(string var, string type) {
@@ -100,7 +101,6 @@ Variable TypeToVariable(string var, string type) {
 			return null;
 		}
 	}
-
 }
 
 class Compiler {
@@ -163,6 +163,10 @@ class Compiler {
 				case NodeType.Return: {
 					// TODO: type checking
 					backend.CompileReturn(cast(ReturnNode) node);
+					break;
+				}
+				case NodeType.Bind: {
+					backend.CompileBind(cast(BindNode) node);
 					break;
 				}
 				default: assert(0);

@@ -14,7 +14,8 @@ class Language {
 		"end",
 		"let",
 		"set",
-		"return"
+		"return",
+		"bind"
 	];
 
 	static const string[] operators = [

@@ -73,6 +73,10 @@ class Lexer {
 			tokens ~= AddToken(TokenType.Identifier);
 		}
 	}
+
+	void Next() {
+		
+	}
 	
 	Token[] LexLine() {
 		Token[] ret;
@@ -128,6 +132,9 @@ class Lexer {
 					}
 					case '#': {
 						goto end;
+					}
+					case '\'': {
+						
 					}
 					default: {
 						reading ~= CurrentChar();

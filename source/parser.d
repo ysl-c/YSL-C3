@@ -5,6 +5,7 @@ import std.stdio;
 import std.format;
 import yslc.error;
 import yslc.lexer;
+import yslc.symbols;
 
 enum BlockType {
 	FunctionDefinition
@@ -22,7 +23,8 @@ enum NodeType {
 	Asm,
 	Let,
 	Set,
-	Return
+	Return,
+	Bind
 }
 
 class Node {
@@ -192,6 +194,26 @@ class ReturnNode : Node {
 
 	override string toString() {
 		return format("return %s", value.toString());
+	}
+}
+
+class BindNode : Node {
+	string   returnType;
+	string   name;
+	string[] types;
+
+	this() {
+		type = NodeType.Bind;
+	}
+
+	override string toString() {
+		string ret = format("bind %s %s", returnType, name);
+
+		foreach (ref arg ; types) {
+			ret ~= format("%s ", arg);
+		}
+
+		return ret;
 	}
 }
 
@@ -373,6 +395,30 @@ class Parser {
 		return ret;
 	}
 
+	BindNode ParseBind() {
+		auto ret = new BindNode();
+		SetupNode(ret);
+
+		Next();
+		ExpectType(TokenType.Identifier);
+		ret.returnType = tokens[i].contents;
+
+		Next();
+		ExpectType(TokenType.Identifier);
+		ret.name = tokens[i].contents;
+
+		Next();
+		while (tokens[i].type != TokenType.EndLine) {
+			ExpectType(TokenType.Identifier);
+			ret.types ~= tokens[i].contents;
+			
+			Next();
+		}
+		-- i;
+
+		return ret;
+	}
+
 	Node ParseStatement() {
 		switch (tokens[i].type) {
 			case TokenType.Keyword: {
@@ -382,6 +428,7 @@ class Parser {
 					case "let":    return cast(Node) ParseLet();
 					case "set":    return cast(Node) ParseSet();
 					case "return": return cast(Node) ParseReturn();
+					case "bind":   return cast(Node) ParseBind();
 					default:       assert(0);
 				}
 			}

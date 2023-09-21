@@ -37,7 +37,8 @@ class BackendRM86 : CompilerBackend {
 
 	override void Init() {
 		// basically the runtime
-		assembly = "jmp __func__main\n";
+		assembly ~= "mov bp, sp\n";
+		assembly ~= "jmp __func__main\n";
 	}
 
 	override void Finish() {
@@ -52,10 +53,15 @@ class BackendRM86 : CompilerBackend {
 		assembly  ~= format("__func__%s:\n", node.name);
 		blocks    ~= BlockType.FunctionDefinition;
 		functions ~= Function(node.name, "");
+
+		foreach (i, ref param ; node.parameters) {
+			Variable var = TypeToVariable(param, node.types[i]);
+			AllocateLocal(var);
+		}
 	}
 
 	override void CompileEnd(EndNode node) {
-		assembly ~= "mov sp, bp\npop bp\n";
+		assembly ~= "pop bx\nmov sp, bp\npop bp\npush bx\n";
 		assembly ~= "ret\n";
 
 		if (blocks.length == 0) {
@@ -86,9 +92,18 @@ class BackendRM86 : CompilerBackend {
 				auto node = cast(VariableNode) pnode;
 				auto var  = GetLocal(node.name);
 
-				assembly ~= format(
-					"push %s [bp + %d]\n", SizeAsAsmType(var.size), var.stackOffset
-				);
+				if (var.size == 1) {
+					assembly ~= "mov bx, sp\n";
+					assembly ~= format("lea si, [bp - %d]\n", var.stackOffset);
+					assembly ~= "mov dl, [si]\n";
+					assembly ~= "mov [bx], dl\n";
+				}
+				else {
+					assembly ~= format(
+						"push %s [bp - %d]\n", SizeAsAsmType(var.size),
+						var.stackOffset
+					);
+				}
 				break;
 			}
 			default: assert(0);
@@ -96,7 +111,8 @@ class BackendRM86 : CompilerBackend {
 	}
 
 	override void CompileFunctionCall(FunctionCallNode node) {
-		assembly  ~= "push bp\nmov bp, sp\n";
+		assembly ~= "push bp\n";
+		assembly ~= "mov bp, sp\n";
 		foreach (ref param ; node.parameters) {
 			CompileParameter(param);
 		}
@@ -121,17 +137,17 @@ class BackendRM86 : CompilerBackend {
 		switch (var.size) {
 			case 1: {
 				assembly ~= "pop ax\n";
-				assembly ~= format("mov [bp + %d], al\n", var.stackOffset);
+				assembly ~= format("mov [bp - %d], al\n", var.stackOffset);
 				break;
 			}
 			case 2: {
 				assembly ~= "pop ax\n";
-				assembly ~= format("mov [bp + %d], ax\n", var.stackOffset);
+				assembly ~= format("mov [bp - %d], ax\n", var.stackOffset);
 				break;
 			}
 			case 4: {
 				assembly ~= "pop eax\n";
-				assembly ~= format("mov [bp + %d], eax\n", var.stackOffset);
+				assembly ~= format("mov [bp - %d], eax\n", var.stackOffset);
 				break;
 			}
 			case 8: {
@@ -146,5 +162,9 @@ class BackendRM86 : CompilerBackend {
 	override void CompileReturn(ReturnNode node) {
 		CompileParameter(node.value);
 		assembly ~= "pop ax\nmov sp, bp\npop bp\nret\n";
+	}
+
+	override void CompileBind(BindNode node) {
+		ErrorFeatureUnsupported(node.GetErrorInfo());
 	}
 }

@@ -64,3 +64,13 @@ void ErrorExtraEnd(ErrorInfo info) {
 	ErrorBegin(info);
 	stderr.writeln("Extra end");
 }
+
+void ErrorFeatureUnsupported(ErrorInfo info) {
+	ErrorBegin(info);
+	stderr.writeln("Feature unsupported on current backend");
+}
+
+void ErrorUnexpectedEOF(ErrorInfo info) {
+	ErrorBegin(info);
+	stderr.writeln("Unexpected EOF");
+}
