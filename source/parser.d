@@ -8,7 +8,9 @@ import yslc.lexer;
 import yslc.symbols;
 
 enum BlockType {
-	FunctionDefinition
+	Function,
+	If,
+	While
 }
 
 enum NodeType {
@@ -24,7 +26,8 @@ enum NodeType {
 	Let,
 	Set,
 	Return,
-	Bind
+	Bind,
+	If
 }
 
 class Node {
@@ -220,6 +223,18 @@ class BindNode : Node {
 		}
 
 		return ret;
+	}
+}
+
+class IfNode : Node {
+	FunctionCallNode check;
+
+	this() {
+		type = NodeType.If;
+	}
+
+	override string toString() {
+		return format("if %s", check.toString());
 	}
 }
 
@@ -433,6 +448,17 @@ class Parser {
 		return ret;
 	}
 
+	IfNode ParseIf() {
+		auto ret = new IfNode();
+		SetupNode(ret);
+
+		Next();
+		ExpectType(TokenType.Identifier);
+		ret.check = ParseFunctionCall();
+
+		return ret;
+	}
+
 	Node ParseStatement() {
 		switch (tokens[i].type) {
 			case TokenType.Keyword: {
@@ -442,7 +468,8 @@ class Parser {
 					case "let":    return cast(Node) ParseLet();
 					case "set":    return cast(Node) ParseSet();
 					case "return": return cast(Node) ParseReturn();
-					case "bind":   return cast(Node) ParseBind();
+					case "extern": return cast(Node) ParseBind();
+					case "if":     return cast(Node) ParseIf();
 					default:       assert(0);
 				}
 			}

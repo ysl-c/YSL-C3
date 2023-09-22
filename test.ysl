@@ -1,26 +1,23 @@
-asm int printf(const char *restrict format, ...);
-
-bind void exit i32
-bind i32 putchar i32
-bind i32 puts ptr
-
-func add_u32 u32 a u32 b -> u32
-	asm return a + b;
-end
-
-func print_u32 u32 n
-	asm printf("%d\n", n);
-end
+%include "std/core_c99.ysl"
 
 func main -> i32
-	let u32 n1
-	let u32 n2
-	let u32 res
-	set n1 5
-	set n2 12
-	
-	add_u32 n1 n2 -> res
-	print_u32 res
+	let u32 a
+	let u32 b
+
+	set a 35
+	set b 35
+
+	extern i32 puts addr
+
+	if uint_equals a b
+		puts "equal 1"
+	end
+
+	set b 70
+
+	if uint_equals a b
+		puts "equal 2"
+	end
 	
 	return 0
 end

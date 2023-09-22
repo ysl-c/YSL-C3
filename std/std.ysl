@@ -1,0 +1,7 @@
+# YSL-C3 Standard Library
+# Written by:
+# - yeti0904
+
+func putstr addr str
+	
+end

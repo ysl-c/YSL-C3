@@ -37,11 +37,18 @@ class IntVariable : Variable {
 	}
 }
 
+class BackendException : Exception {
+	this(string msg, string file = __FILE__, size_t line = __LINE__) {
+		super(msg, file, line);
+	}
+}
+
 class CompilerBackend {
-	string     outFile;
-	Variable[] locals;
-	size_t     topStackOffset;
-	bool       success;
+	string      outFile;
+	Variable[]  locals;
+	BlockType[] blocks;
+	size_t      topStackOffset;
+	bool        success;
 
 	Variable GetLocal(string name) {
 		foreach (ref var ; locals) {
@@ -59,6 +66,10 @@ class CompilerBackend {
 		locals          ~= var;
 	}
 
+	void PopBlock() {
+		blocks = blocks.remove(blocks.length - 1);
+	}
+
 	abstract void Init();	
 	abstract void Finish();
 	abstract void CompileFunctionStart(FunctionStartNode node);
@@ -69,6 +80,7 @@ class CompilerBackend {
 	abstract void CompileSet(SetNode node);
 	abstract void CompileReturn(ReturnNode node);
 	abstract void CompileBind(BindNode node);
+	abstract void CompileIf(IfNode node);
 }
 
 Variable TypeToVariable(string var, string type) {
@@ -97,6 +109,9 @@ Variable TypeToVariable(string var, string type) {
 		case "i64": {
 			return new IntVariable(var, 8, true);
 		}
+		case "addr": {
+			return new IntVariable(var, 8, false);
+		}
 		default: {
 			return null;
 		}
@@ -118,12 +133,23 @@ class Compiler {
 		foreach (ref node ; ast.statements) {
 			switch (node.type) {
 				case NodeType.FunctionStart: {
+					backend.blocks ~= BlockType.Function;
 					backend.CompileFunctionStart(cast(FunctionStartNode) node);
 					break;
 				}
 				case NodeType.End: {
-					backend.locals = [];
+					if (backend.blocks.length == 0) {
+						ErrorExtraEnd(node.GetErrorInfo());
+						backend.success = false;
+						return;
+					}
+
+					if (backend.blocks[$ - 1] == BlockType.Function) {
+						backend.locals = [];
+					}
+					
 					backend.CompileEnd(cast(EndNode) node);
+					backend.PopBlock();
 					break;
 				}
 				case NodeType.FunctionCall: {
@@ -167,6 +193,11 @@ class Compiler {
 				}
 				case NodeType.Bind: {
 					backend.CompileBind(cast(BindNode) node);
+					break;
+				}
+				case NodeType.If: {
+					backend.blocks ~= BlockType.If;
+					backend.CompileIf(cast(IfNode) node);
 					break;
 				}
 				default: assert(0);

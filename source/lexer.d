@@ -73,10 +73,6 @@ class Lexer {
 			tokens ~= AddToken(TokenType.Identifier);
 		}
 	}
-
-	void Next() {
-		
-	}
 	
 	Token[] LexLine() {
 		Token[] ret;

@@ -32,8 +32,8 @@ class BackendC99 : CompilerBackend {
 			case "i32":  return "int32_t";
 			case "u64":  return "uint64_t";
 			case "i64":  return "int64_t";
-			case "ptr":  return "void*";
-			default:     assert(0);
+			case "addr": return "void*";
+			default:     throw new BackendException(format("Unknown type: %s", type));
 		}
 	}
 
@@ -41,8 +41,8 @@ class BackendC99 : CompilerBackend {
 		switch (variable.size) {
 			case 1:  return variable.signed? "int8_t"  : "uint8_t";
 			case 2:  return variable.signed? "int16_t" : "uint16_t";
-			case 3:  return variable.signed? "int32_t" : "uint32_t";
-			case 4:  return variable.signed? "int64_t" : "uint64_t";
+			case 4:  return variable.signed? "int32_t" : "uint32_t";
+			case 8:  return variable.signed? "int64_t" : "uint64_t";
 			default: assert(0);
 		}
 	}
@@ -147,5 +147,12 @@ class BackendC99 : CompilerBackend {
 		}
 
 		res ~= ");\n";
+	}
+
+	override void CompileIf(IfNode node) {
+		res ~= "if (";
+		CompileFunctionCall(node.check);
+		res = res[0 .. $ - 2]; // remove ;
+		res ~= ") {";
 	}
 }

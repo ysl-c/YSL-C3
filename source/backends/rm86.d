@@ -17,13 +17,7 @@ struct Function {
 
 class BackendRM86 : CompilerBackend {
 	string      assembly;
-	BlockType[] blocks;
 	string[]    strings;
-	Function[]  functions;
-
-	void PopBlock() {
-		blocks = blocks.remove(blocks.length - 1);
-	}
 
 	string SizeAsAsmType(size_t size) {
 		switch (size) {
@@ -51,8 +45,6 @@ class BackendRM86 : CompilerBackend {
 
 	override void CompileFunctionStart(FunctionStartNode node) {
 		assembly  ~= format("__func__%s:\n", node.name);
-		blocks    ~= BlockType.FunctionDefinition;
-		functions ~= Function(node.name, "");
 
 		foreach (i, ref param ; node.parameters) {
 			Variable var = TypeToVariable(param, node.types[i]);
@@ -63,12 +55,6 @@ class BackendRM86 : CompilerBackend {
 	override void CompileEnd(EndNode node) {
 		assembly ~= "pop bx\nmov sp, bp\npop bp\npush bx\n";
 		assembly ~= "ret\n";
-
-		if (blocks.length == 0) {
-			ErrorExtraEnd(node.GetErrorInfo());
-			success = false;
-			return;
-		}
 		
 		PopBlock();
 	}
@@ -166,5 +152,9 @@ class BackendRM86 : CompilerBackend {
 
 	override void CompileBind(BindNode node) {
 		ErrorFeatureUnsupported(node.GetErrorInfo());
+	}
+
+	override void CompileIf(IfNode node) {
+		assert(0); // TODO
 	}
 }
