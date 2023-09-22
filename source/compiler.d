@@ -81,6 +81,7 @@ class CompilerBackend {
 	abstract void CompileReturn(ReturnNode node);
 	abstract void CompileBind(BindNode node);
 	abstract void CompileIf(IfNode node);
+	abstract void CompileWhile(WhileNode node);
 }
 
 Variable TypeToVariable(string var, string type) {
@@ -198,6 +199,11 @@ class Compiler {
 				case NodeType.If: {
 					backend.blocks ~= BlockType.If;
 					backend.CompileIf(cast(IfNode) node);
+					break;
+				}
+				case NodeType.While: {
+					backend.blocks ~= BlockType.While;
+					backend.CompileWhile(cast(WhileNode) node);
 					break;
 				}
 				default: assert(0);

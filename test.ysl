@@ -1,22 +1,13 @@
 %include "std/core_c99.ysl"
 
 func main -> i32
-	let u32 a
-	let u32 b
+	let u32 i
+	set i 1
 
-	set a 35
-	set b 35
-
-	extern i32 puts addr
-
-	if uint_equals a b
-		puts "equal 1"
-	end
-
-	set b 70
-
-	if uint_equals a b
-		puts "equal 2"
+	while uint_less i 11
+		print_uint i
+		putch 10
+		add_u32 i 1 -> i
 	end
 	
 	return 0

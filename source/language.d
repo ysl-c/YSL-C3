@@ -16,7 +16,8 @@ class Language {
 		"set",
 		"return",
 		"extern",
-		"if"
+		"if",
+		"while"
 	];
 
 	static const string[] operators = [

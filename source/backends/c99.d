@@ -155,4 +155,11 @@ class BackendC99 : CompilerBackend {
 		res = res[0 .. $ - 2]; // remove ;
 		res ~= ") {";
 	}
+
+	override void CompileWhile(WhileNode node) {
+		res ~= "while (";
+		CompileFunctionCall(node.check);
+		res = res[0 .. $ - 2]; // remove ;
+		res ~= ") {";
+	}
 }

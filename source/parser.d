@@ -27,7 +27,8 @@ enum NodeType {
 	Set,
 	Return,
 	Bind,
-	If
+	If,
+	While
 }
 
 class Node {
@@ -235,6 +236,18 @@ class IfNode : Node {
 
 	override string toString() {
 		return format("if %s", check.toString());
+	}
+}
+
+class WhileNode : Node {
+	FunctionCallNode check;
+
+	this() {
+		type = NodeType.While;
+	}
+
+	override string toString() {
+		return format("while %s", check.toString());
 	}
 }
 
@@ -459,6 +472,17 @@ class Parser {
 		return ret;
 	}
 
+	WhileNode ParseWhile() {
+		auto ret = new WhileNode();
+		SetupNode(ret);
+
+		Next();
+		ExpectType(TokenType.Identifier);
+		ret.check = ParseFunctionCall();
+
+		return ret;
+	}
+
 	Node ParseStatement() {
 		switch (tokens[i].type) {
 			case TokenType.Keyword: {
@@ -470,6 +494,7 @@ class Parser {
 					case "return": return cast(Node) ParseReturn();
 					case "extern": return cast(Node) ParseBind();
 					case "if":     return cast(Node) ParseIf();
+					case "while":  return cast(Node) ParseWhile();
 					default:       assert(0);
 				}
 			}
