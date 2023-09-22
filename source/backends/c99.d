@@ -88,6 +88,10 @@ class BackendC99 : CompilerBackend {
 	}
 	
 	override void CompileFunctionCall(FunctionCallNode node) {
+		if (node.saves) {
+			res ~= format("%s = ", node.saveTo);
+		}
+	
 		res ~= format("%s(", node.func);
 
 		foreach (i, ref param ; node.parameters) {
@@ -126,7 +130,7 @@ class BackendC99 : CompilerBackend {
 	}
 	
 	override void CompileReturn(ReturnNode node) {
-		res ~= "return";
+		res ~= "return ";
 		CompileParameter(node.value);
 		res ~= ";\n";
 	}

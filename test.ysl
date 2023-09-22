@@ -1,12 +1,26 @@
+asm int printf(const char *restrict format, ...);
+
 bind void exit i32
 bind i32 putchar i32
 bind i32 puts ptr
 
-func main
-	putchar 65
-	putchar 66
-	putchar 67
-	putchar 10
-	puts "hello world"
-	exit 69
+func add_u32 u32 a u32 b -> u32
+	asm return a + b;
+end
+
+func print_u32 u32 n
+	asm printf("%d\n", n);
+end
+
+func main -> i32
+	let u32 n1
+	let u32 n2
+	let u32 res
+	set n1 5
+	set n2 12
+	
+	add_u32 n1 n2 -> res
+	print_u32 res
+	
+	return 0
 end

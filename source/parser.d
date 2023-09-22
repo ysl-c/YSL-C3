@@ -52,7 +52,7 @@ class ProgramNode : Node {
 		string ret;
 
 		foreach (ref statement ; statements) {
-			ret ~= statement.toString() ~ '\n';
+			ret ~= format("%s\n", statement.toString());
 		}
 
 		return ret;
@@ -95,6 +95,8 @@ class EndNode : Node {
 class FunctionCallNode : Node {
 	string func;
 	Node[] parameters;
+	bool   saves;
+	string saveTo;
 
 	this() {
 		type = NodeType.FunctionCall;
@@ -105,6 +107,10 @@ class FunctionCallNode : Node {
 
 		foreach (ref node ; parameters) {
 			ret ~= " " ~ node.toString();
+		}
+
+		if (saves) {
+			ret ~= format(" -> %s", saveTo);
 		}
 
 		return ret;
@@ -337,7 +343,15 @@ class Parser {
 		Next();
 
 		while (tokens[i].type != TokenType.EndLine) {
-			ret.parameters ~= ParseParameter();
+			if ((tokens[i].type == TokenType.Operator) && (tokens[i].contents == "->")) {
+				Next();
+				ExpectType(TokenType.Identifier);
+				ret.saves  = true;
+				ret.saveTo = tokens[i].contents;
+			}
+			else {
+				ret.parameters ~= ParseParameter();
+			}
 			Next();
 		}
 

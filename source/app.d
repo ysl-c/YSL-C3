@@ -15,13 +15,14 @@ const string appUsage = "
 Usage: %s {FILE} [options]
 
 Options:
-	-h / --help             : Show this usage
-	-o / --out {FILE}       : Tell the compiler where to put the output
-	-t / --tokens           : Shows lexer output
-	-a / --ast              : Shows parser output
-	-p / --preprocessor     : Show preprocessor output
-	-b / --target {BACKEND} : Choose backend to compile with
-	--final {COMMAND}       : Runs the given command after compilation with the user's shell
+	-h  / --help                : Show this usage
+	-o  / --out {FILE}          : Tell the compiler where to put the output
+	-t  / --tokens              : Shows lexer output
+	-a  / --ast                 : Shows parser output
+	-p  / --preprocessor        : Show preprocessor output
+	-b  / --target {BACKEND}    : Choose backend to compile with
+	-fc / --final {COMMAND}     : Runs the given command after compilation with the user's shell
+	-af / --append-final {TEXT} : Appends the given text to the final command
 
 Backends:
 	rm86 - For x86 real mode/MS-DOS
@@ -88,6 +89,7 @@ int main(string[] args) {
 					backendArg = args[i];
 					break;
 				}
+				case "-fc":
 				case "--final": {
 					++ i;
 					
@@ -99,6 +101,20 @@ int main(string[] args) {
 					}
 
 					runFinal = args[i];
+					break;
+				}
+				case "-af":
+				case "--append-final": {
+					++ i;
+					
+					if (i >= args.length) {
+						stderr.writefln(
+							"Missing filename after %s", args[i - 1]
+						);
+						return 1;
+					}
+
+					runFinal ~= args[i];
 					break;
 				}
 				default: {
