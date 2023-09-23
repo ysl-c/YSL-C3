@@ -17,11 +17,17 @@ class Language {
 		"return",
 		"extern",
 		"if",
-		"while"
+		"while",
+		"overload"
 	];
 
 	static const string[] operators = [
 		"->"
+	];
+
+	static const string[] intTypes = [
+		"u8", "u16", "u32", "u64",
+		"i8", "i16", "i32", "i64"
 	];
 
 	static char EscapeChar(char ch) {

@@ -10,7 +10,8 @@ import yslc.symbols;
 enum BlockType {
 	Function,
 	If,
-	While
+	While,
+	Overload
 }
 
 enum NodeType {
@@ -28,7 +29,8 @@ enum NodeType {
 	Return,
 	Bind,
 	If,
-	While
+	While,
+	Overload
 }
 
 class Node {
@@ -248,6 +250,18 @@ class WhileNode : Node {
 
 	override string toString() {
 		return format("while %s", check.toString());
+	}
+}
+
+class OverloadNode : Node {
+	string name;
+
+	this() {
+		type = NodeType.Overload;
+	}
+
+	override string toString() {
+		return format("overload %s", name);
 	}
 }
 
@@ -483,18 +497,30 @@ class Parser {
 		return ret;
 	}
 
+	OverloadNode ParseOverload() {
+		auto ret = new OverloadNode();
+		SetupNode(ret);
+
+		Next();
+		ExpectType(TokenType.Identifier);
+		ret.name = tokens[i].contents;
+
+		return ret;
+	}
+
 	Node ParseStatement() {
 		switch (tokens[i].type) {
 			case TokenType.Keyword: {
 				switch (tokens[i].contents) {
-					case "func":   return cast(Node) ParseFunc();
-					case "end":    return cast(Node) ParseEnd();
-					case "let":    return cast(Node) ParseLet();
-					case "set":    return cast(Node) ParseSet();
-					case "return": return cast(Node) ParseReturn();
-					case "extern": return cast(Node) ParseBind();
-					case "if":     return cast(Node) ParseIf();
-					case "while":  return cast(Node) ParseWhile();
+					case "func":     return cast(Node) ParseFunc();
+					case "end":      return cast(Node) ParseEnd();
+					case "let":      return cast(Node) ParseLet();
+					case "set":      return cast(Node) ParseSet();
+					case "return":   return cast(Node) ParseReturn();
+					case "extern":   return cast(Node) ParseBind();
+					case "if":       return cast(Node) ParseIf();
+					case "while":    return cast(Node) ParseWhile();
+					case "overload": return cast(Node) ParseOverload();
 					default:       assert(0);
 				}
 			}

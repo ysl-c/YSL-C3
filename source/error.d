@@ -74,3 +74,13 @@ void ErrorUnexpectedEOF(ErrorInfo info) {
 	ErrorBegin(info);
 	stderr.writeln("Unexpected EOF");
 }
+
+void ErrorFunctionInsideFunction(ErrorInfo info) {
+	ErrorBegin(info);
+	stderr.writeln("Defining functions inside of functions is not allowed");
+}
+
+void ErrorUnexpectedStatement(ErrorInfo info, string got) {
+	ErrorBegin(info);
+	stderr.writefln("Unexpected %s", got);
+}

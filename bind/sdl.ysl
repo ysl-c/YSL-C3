@@ -1,0 +1,21 @@
+# SDL2 binding (just for testing lol)
+
+let u32 SDL_INIT_VIDEO
+let i32 SDL_WINDOWPOS_CENTERED
+
+func init_sdl
+	set SDL_INIT_VIDEO 32
+	set SDL_WINDOWPOS_CENTERED 805240832
+end
+
+extern i32  SDL_Init u32
+extern void SDL_Quit
+extern addr SDL_CreateWindow addr i32 i32 i32 i32 u32
+extern addr SDL_CreateRenderer addr i32 u32
+extern i32  SDL_SetRenderDrawColor addr u8 u8 u8 u8
+extern i32  SDL_RenderClear addr
+extern void SDL_RenderPresent addr
+extern void SDL_Delay u32
+extern addr SDL_GetError
+extern void SDL_DestroyWindow addr
+extern void SDL_DestroyRenderer addr

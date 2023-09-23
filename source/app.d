@@ -21,7 +21,8 @@ Options:
 	-a  / --ast                 : Shows parser output
 	-p  / --preprocessor        : Show preprocessor output
 	-b  / --target {BACKEND}    : Choose backend to compile with
-	-fc / --final {COMMAND}     : Runs the given command after compilation with the user's shell
+	-fc / --final {COMMAND}     : Runs the given command after compilation with the
+	                              user's shell
 	-af / --append-final {TEXT} : Appends the given text to the final command
 
 Backends:
@@ -37,6 +38,7 @@ int main(string[] args) {
 	bool   showTokens       = false;
 	bool   showAST          = false;
 	string runFinal         = "";
+	bool   defaultFinal     = true;
 
 	for (size_t i = 1; i < args.length; ++ i) {
 		if (args[i][0] == '-') {
@@ -100,7 +102,8 @@ int main(string[] args) {
 						return 1;
 					}
 
-					runFinal = args[i];
+					runFinal     = args[i];
+					defaultFinal = false;
 					break;
 				}
 				case "-af":
@@ -185,10 +188,12 @@ int main(string[] args) {
 		case "c99": {
 			backend         = new BackendC99();
 			backend.outFile = outFile ~ ".c";
-			runFinal        = format(
-				"cc %s -o %s -std=c99 -O2 && rm %s",
-				backend.outFile, outFile, backend.outFile
-			);
+			if (defaultFinal) {
+				runFinal = format(
+					"cc %s -o %s -std=c99 -O2 %s && rm %s",
+					backend.outFile, outFile, runFinal, backend.outFile
+				);
+			}
 			break;
 		}
 		default: {
@@ -206,7 +211,9 @@ int main(string[] args) {
 		auto res = executeShell(runFinal);
 
 		if (res.status != 0) {
-			stderr.writefln("Final command failed:\n%s\n", res.output);
+			stderr.writefln(
+				"Final command failed:Command: %s\n\n%s\n", runFinal, res.output
+			);
 		}
 	}
 	return 0;
