@@ -119,6 +119,10 @@ class BackendC99 : CompilerBackend {
 				);
 				break;
 			}
+			case VariableType.Address: {
+				res ~= format("void* %s;\n", variable.name);
+				break;
+			}
 			default: assert(0);
 		}
 	}

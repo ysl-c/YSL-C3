@@ -11,8 +11,8 @@ func main -> i32
 
 	SDL_Init SDL_INIT_VIDEO
 
-	asm void* window;
-	asm void* renderer;
+	let addr window
+	let addr renderer
 
 	SDL_CreateWindow "Test" SDL_WINDOWPOS_CENTERED SDL_WINDOWPOS_CENTERED 640 480 0 -> window
 	SDL_CreateRenderer window -1 0 -> renderer

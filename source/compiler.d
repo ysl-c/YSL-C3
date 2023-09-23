@@ -191,7 +191,7 @@ Variable TypeToVariable(string var, string type) {
 		case "i16":  return new IntVariable(var, 2, true);
 		case "i32":  return new IntVariable(var, 4, true);
 		case "i64":  return new IntVariable(var, 8, true);
-		case "addr": return new IntVariable(var, 8, false); // TODO
+		case "addr": return new AddressVariable(var);
 		default:     return null;
 	}
 }

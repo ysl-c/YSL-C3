@@ -9,3 +9,13 @@ dub build
 ```
 
 Then use `./yslc --help` to see usage
+
+## Features
+- [X] Function definitions & calls
+- [X] Variables
+- [X] If statements
+- [X] While statements
+- [ ] For statements
+- [X] Overloads
+- [ ] Classes
+- [ ] Class methods
