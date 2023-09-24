@@ -107,7 +107,6 @@ class BackendC99 : CompilerBackend {
 	
 	override void CompileAsm(AsmNode node) {
 		res     ~= node.code ~ '\n';
-		success  = false;
 	}
 	
 	override void CompileLet(Variable variable) {

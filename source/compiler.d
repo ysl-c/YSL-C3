@@ -128,6 +128,10 @@ class CompilerBackend {
 					auto node = cast(VariableNode) param;
 					auto var  = GetLocal(node.name);
 
+					if (var is null) {
+						ErrorUndefinedVariable(node.GetErrorInfo(), node.name);
+					}
+
 					switch (var.type) {
 						case VariableType.Integer: {
 							auto ivar = cast(IntVariable) var;
@@ -247,15 +251,23 @@ class Compiler {
 			
 			switch (node.type) {
 				case NodeType.FunctionStart: {
+					auto pnode = cast(FunctionStartNode) node;
+				
 					if (backend.currentFunction != "") {
 						ErrorFunctionInsideFunction(node.GetErrorInfo());
 						backend.success = false;
 						continue;
 					}
+
+					foreach (j, ref type ; pnode.types) {
+						string name = pnode.parameters[j];
+
+						backend.AllocateLocal(TypeToVariable(name, type));
+					}
 				
-					backend.currentFunction  = (cast(FunctionStartNode) node).name;
+					backend.currentFunction  = pnode.name;
 					backend.blocks          ~= BlockType.Function;
-					backend.CompileFunctionStart(cast(FunctionStartNode) node);
+					backend.CompileFunctionStart(pnode);
 					break;
 				}
 				case NodeType.End: {
@@ -282,6 +294,12 @@ class Compiler {
 						auto overload = GetOverload(pnode.func);
 
 						foreach (ref funcName ; overload.functions) {
+							if (!backend.FunctionExists(funcName)) {
+								ErrorCallingBrokenOverload(node.GetErrorInfo(), funcName);
+								backend.success = false;
+								break;
+							}
+						
 							auto func = backend.GetFunction(funcName);
 
 							if (backend.ParametersMatch(func.params, pnode.parameters)) {
@@ -290,6 +308,11 @@ class Compiler {
 								break;
 							}
 						}
+					}
+					else if (!backend.FunctionExists(pnode.func)) {
+						ErrorCallingUndefinedFunction(node.GetErrorInfo(), pnode.func);
+						backend.success = false;
+						break;
 					}
 				
 					backend.CompileFunctionCall(pnode);
@@ -331,7 +354,12 @@ class Compiler {
 					break;
 				}
 				case NodeType.Bind: {
-					backend.CompileBind(cast(BindNode) node);
+					auto pnode = cast(BindNode) node;
+					auto func  = Function(pnode.name, pnode.returnType, pnode.types);
+					
+					backend.functions ~= func;
+					
+					backend.CompileBind(pnode);
 					break;
 				}
 				case NodeType.If: {

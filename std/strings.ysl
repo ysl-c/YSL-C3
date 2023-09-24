@@ -1,0 +1,32 @@
+# YSL-C3 Standard Library: Strings
+# Written by:
+# - yeti0904
+
+%include "op.ysl"
+%include "mem.ysl"
+
+func string_length addr str -> u64
+	let u64 ret
+	let u8  ch
+	set ret 0
+	set ch  1
+
+	while uint_not_equals ch 0
+		read_u8 str -> ch
+		inc ret -> ret
+		inc str -> ret
+	end
+
+	return ret
+end
+
+func alloc_string addr src -> addr
+	let u64 len
+	string_length src -> len
+
+	let addr ret
+	alloc string_length -> ret
+
+	memcpy ret src len
+	return ret
+end

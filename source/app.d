@@ -24,6 +24,7 @@ Options:
 	-fc / --final {COMMAND}     : Runs the given command after compilation with the
 	                              user's shell
 	-af / --append-final {TEXT} : Appends the given text to the final command
+	-sf / --show-functions      : Shows functions from the given source file
 
 Backends:
 	rm86 - For x86 real mode/MS-DOS
@@ -39,6 +40,7 @@ int main(string[] args) {
 	bool   showAST          = false;
 	string runFinal         = "";
 	bool   defaultFinal     = true;
+	bool   showFunctions    = false;
 
 	for (size_t i = 1; i < args.length; ++ i) {
 		if (args[i][0] == '-') {
@@ -120,6 +122,11 @@ int main(string[] args) {
 					runFinal ~= args[i];
 					break;
 				}
+				case "-sf":
+				case "--show-functions": {
+					showFunctions = true;
+					break;
+				}
 				default: {
 					stderr.writefln(
 						"Unrecognised command line option %s", args[i]
@@ -177,6 +184,15 @@ int main(string[] args) {
 		return 0;
 	}
 
+	if (showFunctions) {
+		foreach (ref node ; parser.ast.statements) {
+			if (node.type == NodeType.FunctionStart) {
+				writeln(node);
+			}
+		}
+		return 0;
+	}
+
 	CompilerBackend backend;
 
 	switch (backendArg) {
@@ -206,6 +222,11 @@ int main(string[] args) {
 	compiler.backend         = backend;
 	compiler.ast             = parser.ast;
 	compiler.Compile();
+
+	if (!compiler.backend.success) {
+		stderr.writeln("Compilation failed");
+		return 1;
+	}
 
 	if (runFinal != "") {
 		auto res = executeShell(runFinal);

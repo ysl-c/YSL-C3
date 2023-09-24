@@ -162,6 +162,18 @@ func mod_i64 i64 a i64 b -> i64
 	asm return a % b;
 end
 
+func add_addr addr a u64 b -> addr
+	asm return a + b;
+end
+
+func sub_addr addr a u64 b -> addr
+	asm return a - b;
+end
+
+func diff_addr addr a addr b -> u64
+	asm return a - b;
+end
+
 func print_int i64 n
 	asm int printf(const char *restrict format, ...);
 	asm printf("%ld", n);

@@ -84,3 +84,13 @@ void ErrorUnexpectedStatement(ErrorInfo info, string got) {
 	ErrorBegin(info);
 	stderr.writefln("Unexpected %s", got);
 }
+
+void ErrorCallingBrokenOverload(ErrorInfo info, string funcName) {
+	ErrorBegin(info);
+	stderr.writefln("Calling broken overload, with undefined function '%s'", funcName);
+}
+
+void ErrorCallingUndefinedFunction(ErrorInfo info, string funcName) {
+	ErrorBegin(info);
+	stderr.writefln("Calling undefined function '%s'", funcName);
+}

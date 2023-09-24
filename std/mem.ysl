@@ -1,0 +1,15 @@
+# YSL-C3 Standard Library: Memory
+# Written by:
+# - yeti0904
+
+func memcpy addr dest addr src u64 n
+	let u64 i
+	let u8 byte
+	
+	for i 0 n
+		read_u8 src -> byte
+		write_u8 dest byte
+		inc src
+		inc dest
+	end
+end
