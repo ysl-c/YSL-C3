@@ -1,0 +1,9 @@
+%include "../std/cores/core_c99.ysl"
+%include "../std/io.ysl"
+
+func main -> i32
+	putstr "Hello, world"
+	putch 10
+
+	return 0
+end
