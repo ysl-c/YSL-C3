@@ -3,6 +3,7 @@ module yslc.app;
 import std.path;
 import std.stdio;
 import std.format;
+import std.string;
 import std.process;
 import yslc.lexer;
 import yslc.parser;
@@ -42,12 +43,19 @@ int main(string[] args) {
 	bool   defaultFinal     = true;
 	bool   showFunctions    = false;
 
+	assert(args.length >= 1);
+
+	if (args.length == 1) {
+		writefln(appUsage.strip(), args[0]);
+		return 0;
+	}
+
 	for (size_t i = 1; i < args.length; ++ i) {
 		if (args[i][0] == '-') {
 			switch (args[i]) {
 				case "-h":
 				case "--help": {
-					writeln(appUsage);
+					writefln(appUsage.strip(), args[0]);
 					return 0;
 				}
 				case "-o":
