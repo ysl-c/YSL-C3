@@ -230,7 +230,7 @@ class Compiler {
 		assert(0);
 	}
 
-	void Compile() {
+	void Compile(bool executeFinish) {
 		backend.Init();
 		backend.success = true;
 
@@ -413,6 +413,8 @@ class Compiler {
 			}
 		}
 
-		backend.Finish();
+		if (executeFinish) {
+			backend.Finish();
+		}
 	}
 }

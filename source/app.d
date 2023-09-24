@@ -26,6 +26,7 @@ Options:
 	                              user's shell
 	-af / --append-final {TEXT} : Appends the given text to the final command
 	-sf / --show-functions      : Shows functions from the given source file
+	-c  / --check               : Compiles to nowhere, for checking if there are errors in the code
 
 Backends:
 	rm86 - For x86 real mode/MS-DOS
@@ -42,6 +43,7 @@ int main(string[] args) {
 	string runFinal         = "";
 	bool   defaultFinal     = true;
 	bool   showFunctions    = false;
+	bool   executeFinish    = true;
 
 	assert(args.length >= 1);
 
@@ -133,6 +135,11 @@ int main(string[] args) {
 				case "-sf":
 				case "--show-functions": {
 					showFunctions = true;
+					break;
+				}
+				case "-c":
+				case "--check": {
+					executeFinish = false;
 					break;
 				}
 				default: {
@@ -234,11 +241,16 @@ int main(string[] args) {
 	Compiler compiler        = new Compiler();
 	compiler.backend         = backend;
 	compiler.ast             = parser.ast;
-	compiler.Compile();
+	compiler.Compile(executeFinish);
 
 	if (!compiler.backend.success) {
 		stderr.writeln("Compilation failed");
 		return 1;
+	}
+
+	if (!executeFinish) {
+		writeln("Check complete");
+		return 0;
 	}
 
 	if (runFinal != "") {
