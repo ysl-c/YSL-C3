@@ -166,4 +166,12 @@ class BackendC99 : CompilerBackend {
 		res = res[0 .. $ - 2]; // remove ;
 		res ~= ") {";
 	}
+
+	override void CompileFor(ForNode node) {
+		res ~= format("for (%s = ", node.variable);
+		CompileParameter(node.start);
+		res ~= format("; %s < ", node.variable);
+		CompileParameter(node.end);
+		res ~= format("; ++ %s) {", node.variable);
+	}
 }

@@ -161,4 +161,8 @@ class BackendRM86 : CompilerBackend {
 	override void CompileWhile(WhileNode node) {
 		assert(0); // TODO
 	}
+
+	override void CompileFor(ForNode node) {
+		assert(0);
+	}
 }

@@ -11,7 +11,8 @@ enum BlockType {
 	Function,
 	If,
 	While,
-	Overload
+	Overload,
+	For
 }
 
 enum NodeType {
@@ -30,7 +31,8 @@ enum NodeType {
 	Bind,
 	If,
 	While,
-	Overload
+	Overload,
+	For
 }
 
 class Node {
@@ -262,6 +264,20 @@ class OverloadNode : Node {
 
 	override string toString() {
 		return format("overload %s", name);
+	}
+}
+
+class ForNode : Node {
+	string variable;
+	Node   start;
+	Node   end;
+
+	this() {
+		type = NodeType.For;
+	}
+
+	override string toString() {
+		return format("for %s %d %d", variable, start, end);
 	}
 }
 
@@ -508,6 +524,22 @@ class Parser {
 		return ret;
 	}
 
+	ForNode ParseFor() {
+		auto ret = new ForNode();
+		SetupNode(ret);
+
+		Next();
+		ExpectType(TokenType.Identifier);
+		ret.variable = tokens[i].contents;
+
+		Next();
+		ret.start = ParseParameter();
+		Next();
+		ret.end = ParseParameter();
+
+		return ret;
+	}
+
 	Node ParseStatement() {
 		switch (tokens[i].type) {
 			case TokenType.Keyword: {
@@ -521,6 +553,7 @@ class Parser {
 					case "if":       return cast(Node) ParseIf();
 					case "while":    return cast(Node) ParseWhile();
 					case "overload": return cast(Node) ParseOverload();
+					case "for":      return cast(Node) ParseFor();
 					default:       assert(0);
 				}
 			}

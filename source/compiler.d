@@ -179,6 +179,7 @@ class CompilerBackend {
 	abstract void CompileBind(BindNode node);
 	abstract void CompileIf(IfNode node);
 	abstract void CompileWhile(WhileNode node);
+	abstract void CompileFor(ForNode node);
 }
 
 Variable TypeToVariable(string var, string type) {
@@ -373,6 +374,11 @@ class Compiler {
 					overloads ~= overload;
 
 					overloadEnd:
+					break;
+				}
+				case NodeType.For: {
+					backend.blocks ~= BlockType.For;
+					backend.CompileFor(cast(ForNode) node);
 					break;
 				}
 				default: assert(0);

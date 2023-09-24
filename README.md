@@ -15,7 +15,7 @@ Then use `./yslc --help` to see usage
 - [X] Variables
 - [X] If statements
 - [X] While statements
-- [ ] For statements
+- [X] For statements
 - [X] Overloads
 - [ ] Classes
 - [ ] Class methods

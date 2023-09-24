@@ -18,7 +18,8 @@ class Language {
 		"extern",
 		"if",
 		"while",
-		"overload"
+		"overload",
+		"for"
 	];
 
 	static const string[] operators = [

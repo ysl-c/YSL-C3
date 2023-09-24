@@ -2,15 +2,12 @@
 %include "std/std.ysl"
 
 func main -> i32
-	let u32 a
-	let u32 b
+	let u32 i
 
-	set a 5
-	set b 6
-	add a b -> a
-
-	print_uint a
-	putch 10
+	for i 1 11
+		print_uint i
+		putch 10
+	end
 	
 	return 0
 end
