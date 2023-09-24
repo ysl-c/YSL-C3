@@ -194,8 +194,13 @@ int main(string[] args) {
 
 	if (showFunctions) {
 		foreach (ref node ; parser.ast.statements) {
-			if (node.type == NodeType.FunctionStart) {
-				writeln(node);
+			switch (node.type) {
+				case NodeType.FunctionStart:
+				case NodeType.Overload: {
+					writeln(node);
+					break;
+				}
+				default: continue;
 			}
 		}
 		return 0;
