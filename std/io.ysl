@@ -7,7 +7,7 @@
 func putstr addr str
 	let u64 len
 	string_length str -> len
-
+	
 	let u64 i
 	let u8  ch
 	for i 0 len

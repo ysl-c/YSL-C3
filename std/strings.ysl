@@ -14,7 +14,7 @@ func string_length addr str -> u64
 	while uint_not_equals ch 0
 		read_u8 str -> ch
 		inc ret -> ret
-		inc str -> ret
+		inc str -> str
 	end
 
 	return ret
