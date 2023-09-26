@@ -79,7 +79,6 @@ CodeLine[] RunPreprocessor(
 
 	if (firstRun) {
 		auto error = ErrorInfo("<program params>", 0);
-		writeln(preInclude);
 		foreach (ref path ; preInclude) {
 			Include(path, error);
 		}
