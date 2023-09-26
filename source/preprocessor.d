@@ -5,6 +5,7 @@ import std.file;
 import std.path;
 import std.array;
 import std.format;
+import std.stdio;
 import std.string;
 import std.algorithm;
 import core.stdc.stdlib;
@@ -33,12 +34,14 @@ CodeLine[] RunPreprocessor(
 		if (included.canFind(path)) {
 			return;
 		}
+
+		string localPath = path;
 		
 		if (!exists(path)) {
 			bool exist = false;
-
+			
 			foreach (ref ipath ; includePaths) {
-				string localPath = ipath ~ "/" ~ path;
+				localPath = ipath ~ "/" ~ path;
 				
 				if (exists(localPath)) {
 					exist = true;
@@ -58,16 +61,25 @@ CodeLine[] RunPreprocessor(
 			}
 
 			if (exist) {
-				return;
+				goto includeFinishUp;
 			}
 			
 			ErrorNoSuchFile(error, path);
 			success = false;
+			return;
 		}
+
+		includeFinishUp:
+		included ~= localPath;
+		ret      ~= RunPreprocessor(
+			localPath, includePaths, included, ignoreInclude, [],
+			false
+		);
 	}
 
 	if (firstRun) {
 		auto error = ErrorInfo("<program params>", 0);
+		writeln(preInclude);
 		foreach (ref path ; preInclude) {
 			Include(path, error);
 		}
@@ -90,12 +102,6 @@ CodeLine[] RunPreprocessor(
 					string localPath = dirName(file) ~ "/" ~ parts[1];
 
 					Include(localPath, error);
-
-					included ~= localPath;
-					ret      ~= RunPreprocessor(
-						localPath, includePaths, included, ignoreInclude, preInclude,
-						false
-					);
 					break;
 				}
 				default: {
