@@ -22,7 +22,7 @@ struct CodeLine {
 }
 
 CodeLine[] RunPreprocessor(
-	string file, string[] includePaths, ref string[] included
+	string file, string[] includePaths, ref string[] included, bool ignoreInclude
 ) {
 	CodeLine[] ret;
 	string[]   code    = readText(file).replace("\r\n", "\n").split("\n");
@@ -40,6 +40,8 @@ CodeLine[] RunPreprocessor(
 
 			switch (parts[0]) {
 				case "%include": {
+					if (ignoreInclude) continue;
+				
 					string localPath = dirName(file) ~ "/" ~ parts[1];
 
 					if (included.canFind(localPath)) {
@@ -62,7 +64,7 @@ CodeLine[] RunPreprocessor(
 								included ~= localPath;
 								
 								ret ~= RunPreprocessor(
-									localPath, includePaths, included
+									localPath, includePaths, included, ignoreInclude
 								);
 								
 								break;
@@ -79,7 +81,9 @@ CodeLine[] RunPreprocessor(
 					}
 
 					included ~= localPath;
-					ret      ~= RunPreprocessor(localPath, includePaths, included);
+					ret      ~= RunPreprocessor(
+						localPath, includePaths, included, ignoreInclude
+					);
 					break;
 				}
 				default: {

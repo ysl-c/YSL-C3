@@ -27,6 +27,7 @@ Options:
 	-af / --append-final {TEXT} : Appends the given text to the final command
 	-sf / --show-functions      : Shows functions from the given source file
 	-c  / --check               : Compiles to nowhere, for checking if there are errors in the code
+	-ni / --no-include          : Disables includes
 
 Backends:
 	rm86 - For x86 real mode/MS-DOS
@@ -35,8 +36,8 @@ Backends:
 
 int main(string[] args) {
 	string inFile;
-	string outFile    = "out.asm";
-	string backendArg = "c99";
+	string outFile          = "out.asm";
+	string backendArg       = "c99";
 	bool   showPreprocessor = false;
 	bool   showTokens       = false;
 	bool   showAST          = false;
@@ -44,7 +45,8 @@ int main(string[] args) {
 	bool   defaultFinal     = true;
 	bool   showFunctions    = false;
 	bool   executeFinish    = true;
-
+	bool   ignoreInclude    = false;
+	
 	assert(args.length >= 1);
 
 	if (args.length == 1) {
@@ -142,6 +144,11 @@ int main(string[] args) {
 					executeFinish = false;
 					break;
 				}
+				case "-ni":
+				case "--no-include": {
+					ignoreInclude = true;
+					break;
+				}
 				default: {
 					stderr.writefln(
 						"Unrecognised command line option %s", args[i]
@@ -161,7 +168,7 @@ int main(string[] args) {
 	}
 
 	string[] included;	
-	auto program = RunPreprocessor(inFile, [], included);
+	auto program = RunPreprocessor(inFile, [], included, ignoreInclude);
 
 	if (showPreprocessor) {
 		foreach (ref line ; program) {
