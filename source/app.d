@@ -28,6 +28,7 @@ Options:
 	-sf / --show-functions      : Shows functions from the given source file
 	-c  / --check               : Compiles to nowhere, for checking if there are errors in the code
 	-ni / --no-include          : Disables includes
+	-i  / --include             : Includes a file
 
 Backends:
 	rm86 - For x86 real mode/MS-DOS
@@ -35,17 +36,18 @@ Backends:
 ";
 
 int main(string[] args) {
-	string inFile;
-	string outFile          = "out.asm";
-	string backendArg       = "c99";
-	bool   showPreprocessor = false;
-	bool   showTokens       = false;
-	bool   showAST          = false;
-	string runFinal         = "";
-	bool   defaultFinal     = true;
-	bool   showFunctions    = false;
-	bool   executeFinish    = true;
-	bool   ignoreInclude    = false;
+	string   inFile;
+	string   outFile          = "out.asm";
+	string   backendArg       = "c99";
+	bool     showPreprocessor = false;
+	bool     showTokens       = false;
+	bool     showAST          = false;
+	string   runFinal         = "";
+	bool     defaultFinal     = true;
+	bool     showFunctions    = false;
+	bool     executeFinish    = true;
+	bool     ignoreInclude    = false;
+	string[] included;
 	
 	assert(args.length >= 1);
 
@@ -149,6 +151,20 @@ int main(string[] args) {
 					ignoreInclude = true;
 					break;
 				}
+				case "-i":
+				case "--include": {
+					++ i;
+					
+					if (i >= args.length) {
+						stderr.writefln(
+							"Missing filename after %s", args[i - 1]
+						);
+						return 1;
+					}
+
+					included ~= args[i];
+					break;
+				}
 				default: {
 					stderr.writefln(
 						"Unrecognised command line option %s", args[i]
@@ -167,7 +183,6 @@ int main(string[] args) {
 		}
 	}
 
-	string[] included;	
 	auto program = RunPreprocessor(inFile, [], included, ignoreInclude);
 
 	if (showPreprocessor) {
