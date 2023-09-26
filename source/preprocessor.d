@@ -22,11 +22,56 @@ struct CodeLine {
 }
 
 CodeLine[] RunPreprocessor(
-	string file, string[] includePaths, ref string[] included, bool ignoreInclude
+	string file, string[] includePaths, ref string[] included, bool ignoreInclude,
+	string[] preInclude, bool firstRun
 ) {
 	CodeLine[] ret;
 	string[]   code    = readText(file).replace("\r\n", "\n").split("\n");
 	bool       success = true;
+
+	void Include(string path, ErrorInfo error) {
+		if (included.canFind(path)) {
+			return;
+		}
+		
+		if (!exists(path)) {
+			bool exist = false;
+
+			foreach (ref ipath ; includePaths) {
+				string localPath = ipath ~ "/" ~ path;
+				
+				if (exists(localPath)) {
+					exist = true;
+
+					if (included.canFind(localPath)) {
+						break;
+					}
+
+					included ~= localPath;
+					
+					ret ~= RunPreprocessor(
+						localPath, includePaths, included, ignoreInclude, [], false
+					);
+					
+					break;
+				}
+			}
+
+			if (exist) {
+				return;
+			}
+			
+			ErrorNoSuchFile(error, path);
+			success = false;
+		}
+	}
+
+	if (firstRun) {
+		auto error = ErrorInfo("<program params>", 0);
+		foreach (ref path ; preInclude) {
+			Include(path, error);
+		}
+	}
 
 	foreach (i, ref line ; code) {
 		if (line.empty()) {
@@ -44,45 +89,12 @@ CodeLine[] RunPreprocessor(
 				
 					string localPath = dirName(file) ~ "/" ~ parts[1];
 
-					if (included.canFind(localPath)) {
-						break;
-					}
-					
-					if (!exists(localPath)) {
-						bool exist = false;
-
-						foreach (ref path ; includePaths) {
-							localPath = path ~ "/" ~ parts[1];
-							
-							if (exists(localPath)) {
-								exist = true;
-
-								if (included.canFind(localPath)) {
-									break;
-								}
-
-								included ~= localPath;
-								
-								ret ~= RunPreprocessor(
-									localPath, includePaths, included, ignoreInclude
-								);
-								
-								break;
-							}
-						}
-
-						if (exist) {
-							break;
-						}
-						
-						ErrorNoSuchFile(error, localPath);
-						success = false;
-						break;
-					}
+					Include(localPath, error);
 
 					included ~= localPath;
 					ret      ~= RunPreprocessor(
-						localPath, includePaths, included, ignoreInclude
+						localPath, includePaths, included, ignoreInclude, preInclude,
+						false
 					);
 					break;
 				}

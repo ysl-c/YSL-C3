@@ -47,7 +47,7 @@ int main(string[] args) {
 	bool     showFunctions    = false;
 	bool     executeFinish    = true;
 	bool     ignoreInclude    = false;
-	string[] included;
+	string[] includeFirst;
 	
 	assert(args.length >= 1);
 
@@ -162,7 +162,7 @@ int main(string[] args) {
 						return 1;
 					}
 
-					included ~= args[i];
+					includeFirst ~= args[i];
 					break;
 				}
 				default: {
@@ -183,7 +183,10 @@ int main(string[] args) {
 		}
 	}
 
-	auto program = RunPreprocessor(inFile, [], included, ignoreInclude);
+	string[] included;
+	auto program = RunPreprocessor(
+		inFile, [], included, ignoreInclude, includeFirst, true
+	);
 
 	if (showPreprocessor) {
 		foreach (ref line ; program) {
