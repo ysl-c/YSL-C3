@@ -31,7 +31,7 @@ Options:
 	-i  / --include             : Includes a file
 
 Backends:
-	rm86 - For x86 real mode/MS-DOS
+	rm86 - For x86 real mode/MS-DOS (very broken)
 	c99  - Compiles to C99 code (also sets final command to C compiler call)
 ";
 
